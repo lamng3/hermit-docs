@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classification - hermitpy</title>
+<meta name="description" content="How hermitpy decides consistency, unsatisfiable classes, and direct subclass pairs.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">hermitpy</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">hermitpy</a><a href="index.html">Overview</a><a href="use.html">Use</a><a href="fragment.html">Fragment</a><a href="classification.html" aria-current="page">Classification</a><a href="tableau.html">Tableau</a><a href="errors.html">Errors</a>
+</nav>
+<main id="content">
+<p class="kicker">hermitpy.Reasoner</p>
+<h1>Classification</h1>
+<p class="lede">Consistency is a search over the whole ontology. Class subsumption is a separate search that ignores the ABox. The direct hierarchy is built from those subsumption answers.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#consistency">Consistency</a></li><li><a href="#empty-classes">Empty classes</a></li><li><a href="#pairs">Direct pairs</a></li><li><a href="#equivalents">Equivalents</a></li><li><a href="#nothing">Unsatisfiable classes</a></li></ol></nav>
+<h2 id="consistency">Consistency</h2>
+<p><code>is_consistent</code> asks whether the loaded TBox and ABox together have a model. The first answer is cached. An empty graph is consistent and has no subclass pairs.</p>
+<p>A class can be empty while the ontology stays consistent. <code>Unicorn</code> subclass of both <code>Horse</code> and <code>NotHorse</code>, with those two disjoint, is unsatisfiable, and the ontology still has a model: just do not use <code>Unicorn</code>.</p>
+<h2 id="empty-classes">Empty classes</h2>
+<p><code>unsatisfiable_classes</code> returns the sorted named classes for which the atom is not satisfiable in the TBox. That test ignores the ABox. The fragment has no nominals, so a consistent ABox does not change class subsumption.</p>
+<p>If <code>is_consistent</code> is false, every named class is returned. There is no model in which to separate them.</p>
+<h2 id="pairs">Direct pairs</h2>
+<p><code>direct_subclasses</code> refuses an inconsistent ontology. It does not report every class as a subclass of <code>owl:Nothing</code>.</p>
+<p>For a consistent ontology it tests subsumption between <code>owl:Thing</code> and each satisfiable named class. <code>A</code> is subsumed by <code>B</code> when <code>A</code> and not <code>B</code> is unsatisfiable in the TBox. A pair is direct when no third satisfiable class sits strictly between them. Every satisfiable class with no stricter named parent is paired with <code>owl:Thing</code>.</p>
+<p>A chain <code>Dog</code> &sube; <code>Animal</code> &sube; <code>Organism</code> therefore yields three pairs: Dog&ndash;Animal, Animal&ndash;Organism, and Organism&ndash;Thing. Dog&ndash;Organism is omitted because Animal is between them.</p>
+<h2 id="equivalents">Equivalents</h2>
+<p>If two satisfiable named classes subsume each other, both directions are returned: <code>(Dog, Canine)</code> and <code>(Canine, Dog)</code>. Each of them is also linked to the same direct named parents. Neither is linked to <code>owl:Thing</code> when a stricter parent such as <code>Animal</code> exists.</p>
+<h2 id="nothing">Unsatisfiable classes</h2>
+<p>Each unsatisfiable named class is paired with <code>owl:Nothing</code>. Unsatisfiable classes are also reported as equivalent to each other, both directions. They are not placed under the satisfiable classes they were declared to subclass. Those declared parents are already implied by emptiness, and the hierarchy among satisfiable classes is computed separately.</p>
+<p>Source: <a href="https://github.com/lamng3/hermitpy/blob/main/src/hermitpy/reasoner.py">reasoner.py</a>.</p>
+
+</main>
+</div>
+<footer class="site">hermitpy. A HermiT-style OWL reasoner in Python, without a JVM. Code: <a href="https://github.com/lamng3/hermitpy">github.com/lamng3/hermitpy</a>.</footer>
+</body>
+</html>

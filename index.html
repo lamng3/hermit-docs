@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview - hermitpy</title>
+<meta name="description" content="hermitpy is a HermiT-style OWL reasoner in Python. It checks consistency and builds a direct class hierarchy without a JVM.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">hermitpy</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">hermitpy</a><a href="index.html" aria-current="page">Overview</a><a href="use.html">Use</a><a href="fragment.html">Fragment</a><a href="classification.html">Classification</a><a href="tableau.html">Tableau</a><a href="errors.html">Errors</a>
+</nav>
+<main id="content">
+<p class="kicker">hermitpy</p>
+<h1>Overview</h1>
+<p class="lede">A HermiT-style OWL reasoner in Python. It checks whether an ontology is consistent and builds a direct class hierarchy. Reasoning uses a hypertableau and does not need a JVM.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#the-pieces">The pieces</a></li><li><a href="#one-call">One call</a></li><li><a href="#install">Install</a></li></ol></nav>
+<p>The public entry is <code>Reasoner</code>. It reads an <code>rdflib</code> graph, rejects OWL outside a documented fragment, and answers consistency, unsatisfiable classes, and direct subclasses. The calculus follows Motik, Shearer, and Horrocks, &ldquo;Hypertableau Reasoning for Description Logics,&rdquo; Journal of Artificial Intelligence Research, 2009. hermitpy is LGPL-3.0-or-later. HermiT, the reasoner that introduced this calculus, is copyright Oxford University Computing Laboratory 2008&ndash;2014.</p>
+<h2 id="the-pieces">The pieces</h2>
+<div class="cards">
+<a class="card" href="use.html"><strong>Use</strong><span><code>Reasoner</code>, consistency, unsatisfiable classes, and the direct hierarchy.</span></a>
+<a class="card" href="fragment.html"><strong>Fragment</strong><span>The OWL constructs the loader accepts, and the ones it refuses.</span></a>
+<a class="card" href="classification.html"><strong>Classification</strong><span>How subclass pairs, equivalents, and <code>owl:Nothing</code> are chosen.</span></a>
+<a class="card" href="tableau.html"><strong>Tableau</strong><span>The completion graph: rules, blocking, clashes, and the search bounds.</span></a>
+<a class="card" href="errors.html"><strong>Errors</strong><span><code>UnsupportedConstruct</code>, <code>InconsistentOntology</code>, and <code>ReasonerLimitExceeded</code>.</span></a>
+</div>
+<h2 id="one-call">One call</h2>
+<pre><code>from rdflib import Graph
+from hermitpy import Reasoner
+
+graph = Graph()
+graph.parse("ontology.ttl")
+reasoner = Reasoner(graph)
+reasoner.is_consistent()
+reasoner.direct_subclasses()</code></pre>
+<p><code>direct_subclasses</code> returns pairs of IRIs. Equivalent classes appear in both directions. Every satisfiable class with no stricter named parent is linked to <code>owl:Thing</code>. An inconsistent ontology raises <code>InconsistentOntology</code> instead of classifying every class as <code>owl:Nothing</code>.</p>
+<h2 id="install">Install</h2>
+<pre><code>git clone https://github.com/lamng3/hermitpy.git
+cd hermitpy
+pip install -e .</code></pre>
+<p>Python 3.8 or newer. The only dependency is <code>rdflib</code>. Short scripts live in <code>examples/</code>. Tests are <code>python -m unittest discover</code>.</p>
+
+</main>
+</div>
+<footer class="site">hermitpy. A HermiT-style OWL reasoner in Python, without a JVM. Code: <a href="https://github.com/lamng3/hermitpy">github.com/lamng3/hermitpy</a>.</footer>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tableau - hermitpy</title>
+<meta name="description" content="The hypertableau hermitpy uses: completion rules, blocking, datatype clashes, and the search bounds.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">hermitpy</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">hermitpy</a><a href="index.html">Overview</a><a href="use.html">Use</a><a href="fragment.html">Fragment</a><a href="classification.html">Classification</a><a href="tableau.html" aria-current="page">Tableau</a><a href="errors.html">Errors</a>
+</nav>
+<main id="content">
+<p class="kicker">hermitpy.tableau</p>
+<h1>Tableau</h1>
+<p class="lede">Satisfiability is a search over a completion graph. Nodes carry concepts in negation normal form. Edges are role successors. A clash closes a branch. An open, complete graph is a model.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#two-questions">Two questions</a></li><li><a href="#rules">Rules</a></li><li><a href="#blocking">Blocking</a></li><li><a href="#data">Datatype clashes</a></li><li><a href="#bounds">Bounds</a></li></ol></nav>
+<h2 id="two-questions">Two questions</h2>
+<p>Ontology consistency starts from the ABox. Each named individual is a root node, class assertions and literal assertions label that node, and object-property assertions are edges.</p>
+<p>Concept satisfiability starts from one fresh root labeled with the concept, plus the TBox. It does not copy the ABox. Callers check <code>is_consistent</code> first when they need the ontology, not a class, to have a model.</p>
+<p>An empty ABox uses the same one-node start as a concept test with no extra concept, which asks whether the TBox alone is consistent.</p>
+<h2 id="rules">Rules</h2>
+<p>Each node is saturated before the search branches:</p>
+<ol>
+<li>Every general concept inclusion is added to the node.</li>
+<li>A conjunction adds each operand.</li>
+<li>A named class adds the concepts stored as its unfolding.</li>
+<li>A universal restriction copies its filler to each neighbor along that role. On a transitive role, the universal itself is copied to the neighbor as well.</li>
+<li>An edge adds the role's domain concepts to the source and its range concepts to the target.</li>
+</ol>
+<p><code>owl:Thing</code> is never stored. Adding a concept that is already on the node does nothing.</p>
+<p>After saturation, an open disjunction is a choice point. The search tries each operand on a copy of the graph and stops at the first open branch. If every branch clashes, the concept is unsatisfiable.</p>
+<p>Existential restrictions that are not yet witnessed create one successor and then saturate again. The successor is labeled with the filler, unless the filler is <code>owl:Thing</code>, in which case the edge alone is enough. Only one successor is created per pass.</p>
+<h2 id="blocking">Blocking</h2>
+<p>A node is blocked when an ancestor has the same label, that ancestor's parent has the same label as this node's parent, and both edges use the same role. A node under a blocked parent is blocked too. Blocked nodes do not spawn further successors. This pairwise check is what keeps inverses and transitive roles from building an infinite chain, as in a person who must have a person as a parent.</p>
+<h2 id="data">Datatype clashes</h2>
+<p>A node clashes when it contains <code>owl:Nothing</code>, or a named class and the negation of that same class. It also clashes when a datatype existential or an asserted literal cannot meet the universal restrictions on that property. Numeric bounds are intersected. A complemented range excludes its positive part. Distinct families, such as a number and a string, do not intersect, except that <code>rdfs:Literal</code> meets any family.</p>
+<h2 id="bounds">Bounds</h2>
+<p>The search refuses a graph of 256 nodes, and a branch deeper than 4096. Either case raises <code>ReasonerLimitExceeded</code>. Those bounds are safety stops for this fragment search. They are not a completeness proof for OWL beyond the <a href="fragment.html">fragment</a>.</p>
+<p>Source: <a href="https://github.com/lamng3/hermitpy/blob/main/src/hermitpy/tableau.py">tableau.py</a> and <a href="https://github.com/lamng3/hermitpy/blob/main/src/hermitpy/syntax.py">syntax.py</a>.</p>
+
+</main>
+</div>
+<footer class="site">hermitpy. A HermiT-style OWL reasoner in Python, without a JVM. Code: <a href="https://github.com/lamng3/hermitpy">github.com/lamng3/hermitpy</a>.</footer>
+</body>
+</html>

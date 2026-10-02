@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fragment - hermitpy</title>
+<meta name="description" content="The OWL fragment hermitpy accepts, and the constructs that raise UnsupportedConstruct.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">hermitpy</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">hermitpy</a><a href="index.html">Overview</a><a href="use.html">Use</a><a href="fragment.html" aria-current="page">Fragment</a><a href="classification.html">Classification</a><a href="tableau.html">Tableau</a><a href="errors.html">Errors</a>
+</nav>
+<main id="content">
+<p class="kicker">hermitpy.load</p>
+<h1>Fragment</h1>
+<p class="lede">The loader turns an rdflib graph into a TBox and an ABox. A construct outside the fragment raises UnsupportedConstruct. It is not dropped.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#accepted">Accepted</a></li><li><a href="#datatypes">Datatypes</a></li><li><a href="#refused">Refused</a></li><li><a href="#ignored">Ignored</a></li><li><a href="#how-axioms-land">How axioms land</a></li></ol></nav>
+<h2 id="accepted">Accepted</h2>
+<table>
+<tr><th>Construct</th><th>What the loader does</th></tr>
+<tr><td>Named classes, <code>owl:Thing</code>, <code>owl:Nothing</code></td><td>Named IRIs other than Thing and Nothing are recorded as classes to classify.</td></tr>
+<tr><td><code>rdfs:subClassOf</code></td><td>A named class on the left unfolds into its superclass. A complex left-hand side becomes a general inclusion.</td></tr>
+<tr><td><code>owl:equivalentClass</code></td><td>Two inclusions, one each way. Equivalence of two properties is refused.</td></tr>
+<tr><td><code>owl:disjointWith</code></td><td>Each class is a subclass of the complement of the other. Disjoint properties are refused.</td></tr>
+<tr><td><code>owl:complementOf</code>, <code>owl:intersectionOf</code>, <code>owl:unionOf</code></td><td>Parsed and pushed into negation normal form.</td></tr>
+<tr><td><code>owl:someValuesFrom</code>, <code>owl:allValuesFrom</code></td><td>Existential and universal restrictions on object properties, including inverse roles written with <code>owl:inverseOf</code>.</td></tr>
+<tr><td><code>owl:inverseOf</code></td><td>Named inverses are recorded both ways. A property declared inverse of itself is treated as symmetric.</td></tr>
+<tr><td><code>owl:TransitiveProperty</code>, <code>owl:SymmetricProperty</code></td><td>Named properties only. Transitivity is copied onto a named inverse.</td></tr>
+<tr><td><code>rdfs:domain</code>, <code>rdfs:range</code></td><td>Object-property domain and range, applied to a role and to its inverse. A datatype-property domain is an existential over <code>rdfs:Literal</code>.</td></tr>
+<tr><td>Class assertions</td><td><code>individual a Class</code> on a named individual.</td></tr>
+<tr><td>Object-property assertions</td><td>Two named individuals and a named property.</td></tr>
+<tr><td>Literal assertions</td><td>A named individual, a property, and a supported literal.</td></tr>
+</table>
+<p>Source: <a href="https://github.com/lamng3/hermitpy/blob/main/src/hermitpy/load.py">load.py</a>.</p>
+<h2 id="datatypes">Datatypes</h2>
+<p>Restrictions may use <code>owl:onDatatype</code> and <code>owl:withRestrictions</code> on a datatype property in the forward direction. The facets are <code>xsd:minInclusive</code>, <code>xsd:maxInclusive</code>, <code>xsd:minExclusive</code>, and <code>xsd:maxExclusive</code>. A datatype restriction on an inverse property is refused.</p>
+<p>The numeric family is <code>xsd:integer</code>, <code>xsd:int</code>, <code>xsd:long</code>, <code>xsd:short</code>, <code>xsd:nonNegativeInteger</code>, <code>xsd:positiveInteger</code>, <code>xsd:nonPositiveInteger</code>, <code>xsd:negativeInteger</code>, <code>xsd:decimal</code>, <code>xsd:double</code>, <code>xsd:float</code>, <code>owl:real</code>, and <code>owl:rational</code>. Integer datatypes stay on integers when bounds are tightened. The other families are <code>xsd:string</code>, <code>xsd:anyURI</code>, <code>xsd:date</code>, <code>xsd:dateTime</code>, <code>xsd:boolean</code>, and <code>rdfs:Literal</code>. Any other datatype raises <code>UnsupportedConstruct</code>.</p>
+<p>An existential numeric bound and a universal numeric bound that cannot overlap make the class unsatisfiable. The ontology can still be consistent.</p>
+<h2 id="refused">Refused</h2>
+<p>These raise <code>UnsupportedConstruct</code>. The exception names the construct. See <a href="errors.html">Errors</a>.</p>
+<ul>
+<li>Cardinality, including <code>owl:maxCardinality</code>, <code>owl:minCardinality</code>, <code>owl:qualifiedCardinality</code>, and the exact forms.</li>
+<li>Property chains, role inclusion (<code>rdfs:subPropertyOf</code>), <code>owl:equivalentProperty</code>, and <code>owl:propertyDisjointWith</code>.</li>
+<li>Nominals (<code>owl:oneOf</code>), keys, <code>owl:hasSelf</code>, and <code>owl:disjointUnionOf</code>.</li>
+<li><code>owl:sameAs</code>, <code>owl:differentFrom</code>, <code>owl:AllDifferent</code>, <code>owl:AllDisjointClasses</code>, and <code>owl:AllDisjointProperties</code>.</li>
+<li><code>owl:FunctionalProperty</code>, <code>owl:InverseFunctionalProperty</code>, <code>owl:AsymmetricProperty</code>, <code>owl:IrreflexiveProperty</code>, and <code>owl:ReflexiveProperty</code>.</li>
+<li>Negative property assertions, SWRL, and <code>owl:imports</code>.</li>
+<li>Anonymous individuals, anonymous transitive or symmetric properties, cyclic class expressions, and a property with two conflicting <code>owl:inverseOf</code> targets.</li>
+</ul>
+<p>Any OWL predicate outside the accepted set is refused the same way, so a new constructor is not silently skipped.</p>
+<h2 id="ignored">Ignored</h2>
+<p>Annotation triples are skipped: <code>rdfs:label</code>, <code>rdfs:comment</code>, <code>rdfs:seeAlso</code>, <code>rdfs:isDefinedBy</code>, <code>owl:versionInfo</code>, <code>owl:deprecated</code>, and any property typed <code>owl:AnnotationProperty</code>. Ontology header triples such as <code>owl:versionIRI</code>, <code>owl:priorVersion</code>, <code>owl:backwardCompatibleWith</code>, and <code>owl:incompatibleWith</code> are not axioms.</p>
+<h2 id="how-axioms-land">How axioms land</h2>
+<p>A subclass axiom whose left side is a named class is stored as an unfolding of that name. Unfolding is applied when the tableau sees the atom. A left side that is a conjunction, a restriction, or another complex concept is stored as a general concept inclusion and added to every node.</p>
+<p><code>owl:Nothing</code> on the left of an inclusion is dropped. A superclass of <code>owl:Thing</code> is dropped. Declarations of <code>owl:Class</code>, <code>owl:ObjectProperty</code>, <code>owl:DatatypeProperty</code>, <code>owl:NamedIndividual</code>, and <code>owl:Ontology</code> are not class assertions.</p>
+
+</main>
+</div>
+<footer class="site">hermitpy. A HermiT-style OWL reasoner in Python, without a JVM. Code: <a href="https://github.com/lamng3/hermitpy">github.com/lamng3/hermitpy</a>.</footer>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Use - hermitpy</title>
+<meta name="description" content="The hermitpy Reasoner: consistency, unsatisfiable classes, and a direct class hierarchy.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">hermitpy</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">hermitpy</a><a href="index.html">Overview</a><a href="use.html" aria-current="page">Use</a><a href="fragment.html">Fragment</a><a href="classification.html">Classification</a><a href="tableau.html">Tableau</a><a href="errors.html">Errors</a>
+</nav>
+<main id="content">
+<p class="kicker">hermitpy.Reasoner</p>
+<h1>Use</h1>
+<p class="lede">Construct a Reasoner from an rdflib graph that is already parsed. Turtle, RDF/XML, and the other formats rdflib accepts all work, because the loader sees the graph, not the file.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#construct">Construct</a></li><li><a href="#methods">Methods</a></li><li><a href="#hierarchy">A small hierarchy</a></li><li><a href="#inconsistent">An inconsistent ontology</a></li></ol></nav>
+<h2 id="construct">Construct</h2>
+<pre><code>Reasoner(graph: Graph)</code></pre>
+<p>Construction loads the graph. A construct outside the <a href="fragment.html">fragment</a> raises <code>UnsupportedConstruct</code> here, before any query. Source: <a href="https://github.com/lamng3/hermitpy/blob/main/src/hermitpy/reasoner.py">reasoner.py</a>.</p>
+<h2 id="methods">Methods</h2>
+<table>
+<tr><th>Method</th><th>Returns</th><th>When it fails</th></tr>
+<tr><td><code>is_consistent()</code></td><td><code>bool</code></td><td>Never, for a graph that loaded. The answer is cached on the reasoner.</td></tr>
+<tr><td><code>unsatisfiable_classes()</code></td><td><code>list[str]</code></td><td>Named class IRIs that are empty in every model, sorted. If the ontology itself is inconsistent, every named class is returned.</td></tr>
+<tr><td><code>direct_subclasses()</code></td><td><code>list[tuple[str, str]]</code></td><td>Direct <code>(subclass, superclass)</code> IRI pairs, sorted. Raises <code>InconsistentOntology</code> when the ontology has no model.</td></tr>
+</table>
+<p>IRIs are full strings, including <code>http://www.w3.org/2002/07/owl#Thing</code> and <code>http://www.w3.org/2002/07/owl#Nothing</code>. How those pairs are chosen is on the <a href="classification.html">Classification</a> page.</p>
+<h2 id="hierarchy">A small hierarchy</h2>
+<pre><code>from rdflib import Graph
+from hermitpy import Reasoner
+
+graph = Graph()
+graph.parse(data='''
+@prefix ex: &lt;https://example.org/&gt; .
+ex:Dog rdfs:subClassOf ex:Animal .
+ex:Animal rdfs:subClassOf ex:Organism .
+''', format="turtle")
+
+reasoner = Reasoner(graph)
+print(reasoner.is_consistent())
+for child, parent in reasoner.direct_subclasses():
+    print(child, "subClassOf", parent)</code></pre>
+<p>The pairs are <code>Animal</code> under <code>Organism</code>, <code>Dog</code> under <code>Animal</code>, and <code>Organism</code> under <code>owl:Thing</code>. <code>Dog</code> is not listed directly under <code>Organism</code> or <code>owl:Thing</code>. The same shape is <code>examples/hierarchy.py</code>.</p>
+<h2 id="inconsistent">An inconsistent ontology</h2>
+<pre><code>from hermitpy import InconsistentOntology
+
+if reasoner.is_consistent():
+    pairs = reasoner.direct_subclasses()
+else:
+    empty = reasoner.unsatisfiable_classes()</code></pre>
+<p>Calling <code>direct_subclasses</code> on an ontology with no model raises <code>InconsistentOntology</code>. <code>examples/inconsistent.py</code> parses a file and prints <code>is_consistent()</code>.</p>
+
+</main>
+</div>
+<footer class="site">hermitpy. A HermiT-style OWL reasoner in Python, without a JVM. Code: <a href="https://github.com/lamng3/hermitpy">github.com/lamng3/hermitpy</a>.</footer>
+</body>
+</html>

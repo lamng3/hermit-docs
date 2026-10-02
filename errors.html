@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Errors - hermitpy</title>
+<meta name="description" content="The three exceptions hermitpy raises: unsupported OWL, an inconsistent ontology, and a search bound.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">hermitpy</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">hermitpy</a><a href="index.html">Overview</a><a href="use.html">Use</a><a href="fragment.html">Fragment</a><a href="classification.html">Classification</a><a href="tableau.html">Tableau</a><a href="errors.html" aria-current="page">Errors</a>
+</nav>
+<main id="content">
+<p class="kicker">hermitpy.errors</p>
+<h1>Errors</h1>
+<p class="lede">Loading fails closed. Classification refuses an ontology with no model. The tableau stops if the graph or the branch grows past its bound.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#unsupported">UnsupportedConstruct</a></li><li><a href="#inconsistent">InconsistentOntology</a></li><li><a href="#limit">ReasonerLimitExceeded</a></li></ol></nav>
+<pre><code>from hermitpy import InconsistentOntology, ReasonerLimitExceeded, UnsupportedConstruct
+
+try:
+    pairs = reasoner.direct_subclasses()
+except InconsistentOntology:
+    print(reasoner.unsatisfiable_classes())
+except UnsupportedConstruct as error:
+    print(error.construct)
+except ReasonerLimitExceeded:
+    print("search bound")</code></pre>
+<h2 id="unsupported">UnsupportedConstruct</h2>
+<p>A <code>ValueError</code>. Raised while the graph is loaded, including from <code>Reasoner(...)</code>, when the ontology uses OWL outside the <a href="fragment.html">fragment</a>. The message is <code>Unsupported OWL construct: ...</code> and says the construct is not ignored.</p>
+<p><code>error.construct</code> is the short name, such as <code>owl:maxCardinality</code>, <code>owl:oneOf</code>, <code>SWRL</code>, or <code>anonymous individual</code>. Source: <a href="https://github.com/lamng3/hermitpy/blob/main/src/hermitpy/errors.py">errors.py</a>.</p>
+<h2 id="inconsistent">InconsistentOntology</h2>
+<p>A <code>ValueError</code>. Raised only by <code>direct_subclasses</code> when <code>is_consistent</code> is false. <code>unsatisfiable_classes</code> does not raise it. On an inconsistent ontology that method returns every named class.</p>
+<h2 id="limit">ReasonerLimitExceeded</h2>
+<p>A <code>RuntimeError</code>. Raised when a completion graph reaches 256 nodes, or when nondeterministic search passes depth 4096. The node message says the fragment search did not terminate. The depth message says the tableau search depth was exceeded.</p>
+
+</main>
+</div>
+<footer class="site">hermitpy. A HermiT-style OWL reasoner in Python, without a JVM. Code: <a href="https://github.com/lamng3/hermitpy">github.com/lamng3/hermitpy</a>.</footer>
+</body>
+</html>
